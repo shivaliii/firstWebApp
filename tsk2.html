@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> QuickScrum Backlog </title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .task-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .task {
+            background-color: #f9f9f9;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items:left;
+        }
+
+        .task input[type="text"] {
+            width: 60%;
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        .task button {
+            background-color: #e44d26;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+            text-align:right;
+        }
+
+        .search-bar input[type="text"] {
+            width: 60%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        .config-bar {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .config-bar button {
+            background-color: #007acc;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius:3px;
+        }
+        
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 900;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 >QuickScrum Backlog </h1>
+
+        <div class="config-bar">
+            <button onclick="configureColumns()">Column Configuration</button>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" placeholder="Search tasks..." id="searchInput" onkeyup="searchTasks()">
+        </div>
+
+        <ul class="task-list" id="taskList">
+            // Tasks will be dynamically added here -->
+         </ul>
+
+        <div>
+            <input type="text" placeholder="Add a new task..." id="newTask">
+            <button onclick="addTask()">Add</button>
+        </div>
+    </div>
+    <div>
+        <div class 
+    </div>
+
+    <script>
+        // Sample data for tasks
+        let tasks = [
+            { id: 1, text: "Task 1", status: 1 },
+            { id: 2, text: "Task 2", status: 2 },
+            // Add more tasks as needed
+        ];
+
+        // Sample columns configuration
+        let columns = [
+            { id: 1, name: "To Do" },
+            { id: 2, name: "In Progress" },
+            { id: 3, name: "Done" },
+        ];
+
+        // Function to render tasks
+        function renderTasks() {
+            const taskList = document.getElementById("taskList");
+            taskList.innerHTML = '';
+
+            tasks.forEach(task => {
+                const li = document.createElement("li");
+                li.className = "task";
+                li.innerHTML = `
+                    <div onclick="openTaskPopup(${task.id})">
+                        <input type="text" value="${task.text}" readonly>
+                    </div>
+                    <button onclick="deleteTask(${task.id})">Delete</button>
+                    <select onchange="changeStatus(${task.id}, this.value)">
+                        ${columns.map(column => `<option value="${column.id}" ${task.status === column.id ? 'selected' : ''}>${column.name}</option>`).join('')}
+                    </select>
+                `;
+                taskList.appendChild(li);
+            });
+        }
+
+        // Function to enable inline edit
+        function enableInlineEdit(inputElement) {
+            inputElement.readOnly = false;
+            inputElement.focus();
+        }
+
+        // Function to update task text during inline edit
+        function updateTaskText(taskId, newText) {
+            const task = tasks.find(task => task.id === taskId);
+            if (task) {
+                task.text = newText;
+            }
+        }
+
+        // Function to handle blur event during inline edit
+        function handleBlur(event, taskId) {
+            const newText = event.target.value.trim();
+            event.target.readOnly = true;
+
+            if (newText !== '') {
+                updateTaskText(taskId, newText);
+            }
+
+            renderTasks();
+        }
+
+        // Function to change task status
+        function changeStatus(taskId, newStatus) {
+            const task = tasks.find(task => task.id === taskId);
+            if (task) {
+                task.status = parseInt(newStatus);
+            }
+            renderTasks();
+        }
+
+        // Function to configure columns (can be expanded based on your needs)
+        function configureColumns() {
+            alert("Column configuration functionality will be implemented here.");
+        }
+
+        // Function to add a new task
+        function addTask() {
+            const newTaskInput = document.getElementById("newTask");
+            const newTaskText = newTaskInput.value.trim();
+
+            if (newTaskText !== "") {
+                const newTask = { id: tasks.length + 1, text: newTaskText, status: 1 };
+                tasks.push(newTask);
+                newTaskInput.value = '';
+                renderTasks();
+            }
+        }
+
+        // Function to delete a task
+        function deleteTask(taskId) {
+            tasks = tasks.filter(task => task.id !== taskId);
+            renderTasks();
+        }
+
+        // Function to search tasks
+        function searchTasks() {
+            const searchInput = document.getElementById("searchInput");
+            const searchText = searchInput.value.toLowerCase();
+
+            const filteredTasks = tasks.filter(task => task.text.toLowerCase().includes(searchText));
+            tasks = filteredTasks;
+            renderTasks();
+        }
+
+        // Function to open the task popup
+        function openTaskPopup(taskId) {
+            const task = tasks.find(task => task.id === taskId);
+
+            if (task) {
+                const popup = document.querySelector('.popup');
+                const overlay = document.querySelector('.overlay');
+                const popupContent = popup.querySelector('.popup-content');
+
+                // Update the popup content based on the task
+                popupContent.innerHTML = `
+                    <h2>Edit Task</h2>
+                    <input type="text" value="${task.text}" id="popupTaskText">
+                    <button onclick="updateTaskText(${taskId})">Save</button>
+                    <button onclick="closeTaskPopup()">Cancel</button>
+                `;
+
+                // Show the popup and overlay
+                popup.style.display = 'block';
+                overlay.style.display = 'block';
+            }
+        }
+
+        // Function to close the task popup
+        function closeTaskPopup() {
+            const popup = document.querySelector('.popup');
+            const overlay = document.querySelector('.overlay');
+
+            // Hide the popup and overlay
+            popup.style.display = 'none';
+            overlay.style.display = 'none';
+        }
+
+        // Function to update task text from the popup
+        function updateTaskText(taskId) {
+            const popupTaskText = document.getElementById('popupTaskText');
+            const newText = popupTaskText.value.trim();
+
+            if (newText !== '') {
+                updateTaskText(taskId, newText);
+            }
+
+            renderTasks();
+            closeTaskPopup();
+        }
+
+        // Function to sort tasks by text
+        function sortTasksByText() {
+            tasks.sort((a, b) => a.text.localeCompare(b.text));
+            renderTasks();
+        }
+
+        // Initial rendering
+        renderTasks();
+    </script>
+
+    <!-- pop up html -->
+     <div class="overlay" onclick="closeTaskPopup()"></div>
+    <div class="popup">
+        <div class="popup-content"></div>
+    </div>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
